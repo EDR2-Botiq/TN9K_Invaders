@@ -59,8 +59,8 @@ A complete recreation of the classic 1978 Space Invaders arcade game for the Tan
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/TN9K_SI.git
-cd TN9K_SI
+git clone https://github.com/yourusername/TN9K_Invaders.git
+cd TN9K_Invaders
 
 # Build the project (requires Gowin EDA)
 "C:\Gowin\Gowin_V1.9.12_x64\IDE\bin\gw_sh.exe" build.tcl
@@ -120,22 +120,57 @@ See [Documents/ROM_CONVERSION.md](Documents/ROM_CONVERSION.md) for detailed inst
 ## 📁 Project Structure
 
 ```
-TN9K_SI/
+TN9K_Invaders/
 ├── src/                          # VHDL source files
 │   ├── T80/                      # Intel 8080 CPU core
-│   ├── hdmi/                     # HDMI video output
+│   │   ├── T80.vhd              # Main CPU core
+│   │   ├── T80_ALU.vhd          # Arithmetic Logic Unit
+│   │   ├── T80_MCode.vhd        # Microcode engine
+│   │   ├── T80_Pack.vhd         # Type definitions
+│   │   └── T80_Reg.vhd          # Register file
 │   ├── gowin_rpll/              # Clock generation
+│   │   ├── gowin_rpll.vhd       # System PLL (20MHz)
+│   │   └── gowin_tmds_rpll.vhd  # HDMI TMDS PLL
+│   ├── gowin_clkdiv/            # Clock dividers
+│   ├── hdmi/                     # HDMI video output
+│   │   ├── hdmi_encoder.vhd     # HDMI signal encoder
+│   │   └── tmds_encoder.vhd     # TMDS encoding
 │   ├── invaders_top.vhd         # Top-level system
 │   ├── invaders.vhd             # Game logic core
-│   └── snes_controller.vhd      # Controller interface
+│   ├── invaders_video.vhd       # Video subsystem
+│   ├── invaders_audio.vhd       # Audio generation
+│   ├── T8080se.vhd              # 8080 CPU wrapper
+│   ├── mw8080.vhd               # Midway 8080 system
+│   ├── dac.vhd                  # PWM audio DAC
+│   ├── sigma_delta_dac.vhd     # Sigma-delta DAC
+│   ├── dpram.vhd                # Dual-port RAM
+│   ├── gen_ram.vhd              # Generic RAM
+│   ├── TN9K-Invaders.cst        # Pin constraints
+│   └── TN9K-Invaders.sdc        # Timing constraints
 ├── proms/                        # ROM data (user-provided)
+│   ├── invaders_rom.vhd         # Game ROM (generated)
+│   ├── README.md                # ROM conversion guide
+│   └── readme.txt               # Original instructions
 ├── impl/                         # Build outputs
+│   ├── gwsynthesis/             # Synthesis outputs
+│   ├── pnr/                     # Place & route outputs
+│   └── temp/                    # Temporary files
 ├── Documents/                    # Technical documentation
 │   ├── BUILD.md                 # Detailed build guide
+│   ├── HARDWARE_CONNECTIONS.md  # Hardware setup guide
 │   ├── HDMI_IMPLEMENTATION_GUIDE.md
-│   └── Tang_Nano_9K_Complete_Reference.md
+│   ├── Tang_Nano_9K_Complete_Reference.md
+│   ├── si_vram_layout_decoding_portrait.md
+│   └── images/
+│       └── EDR2_logo.png
+├── tools/                        # Build tools
+│   ├── make_invaders_prom.bat   # ROM converter script
+│   └── make_vhdl_prom.exe       # ROM conversion tool
+├── TN9K-Invaders.gprj           # Gowin project file
+├── build.tcl                     # Build automation script
 ├── LICENSE                       # MIT License
 ├── README.md                     # This file
+├── CONTRIBUTORS.md              # Contributor list
 └── CLAUDE.md                     # Development guidelines
 ```
 
@@ -231,8 +266,8 @@ Space Invaders, released by Taito in 1978, was designed by Tomohiro Nishikado an
 
 ## 📞 Support
 
-- **Issues**: [GitHub Issues](https://github.com/yourusername/TN9K_SI/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/yourusername/TN9K_SI/discussions)
+- **Issues**: [GitHub Issues](https://github.com/yourusername/TN9K_Invaders/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/yourusername/TN9K_Invaders/discussions)
 - **Documentation**: See `Documents/` directory for detailed guides
 
 ---

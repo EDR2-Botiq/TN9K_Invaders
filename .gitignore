@@ -45,6 +45,8 @@ Thumbs.db
 TODO.md
 NOTES.md
 *.private.*
+CLAUDE.md
+*.tcl
 
 # ROM files (users must provide their own)
 proms/invaders_*.vhd
