@@ -1,0 +1,51 @@
+# TN9K Space Invaders - Git Ignore Rules
+
+# Gowin EDA build outputs
+impl/gwsynthesis/
+impl/pnr/
+impl/temp/
+*.log
+*.rpt
+*.json
+*.gprj.user
+*.gprj.user.*
+
+# FPGA bitstream files
+*.fs
+*.bin
+*.bit
+
+# Temporary and backup files
+*_tmp.vhd
+*_bak.vhd
+nul
+*.bak
+*~
+.#*
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# OS generated files
+*.tmp
+*.temp
+.directory
+
+# Gowin specific
+*.gprj.user
+*.gprj.user.*
+*.gprj.bak
+
+# Personal notes and private files
+TODO.md
+NOTES.md
+*.private.*
+
+# ROM files (users must provide their own)
+proms/invaders_*.vhd
+!proms/README.md
