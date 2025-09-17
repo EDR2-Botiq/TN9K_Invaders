@@ -12,20 +12,20 @@
         <File path="src/T80/T80_Pack.vhd" type="file.vhdl" enable="1"/>
         <File path="src/T80/T80_Reg.vhd" type="file.vhdl" enable="1"/>
         <File path="src/T8080se.vhd" type="file.vhdl" enable="1"/>
-        <File path="src/dac.vhd" type="file.vhdl" enable="1"/>
+        <File path="src/sigma_delta_dac.vhd" type="file.vhdl" enable="1"/>
         <File path="src/dpram.vhd" type="file.vhdl" enable="1"/>
         <File path="src/gen_ram.vhd" type="file.vhdl" enable="1"/>
+        <File path="src/gowin_clkdiv/gowin_clkdiv.vhd" type="file.vhdl" enable="1"/>
         <File path="src/gowin_rpll/gowin_rpll.vhd" type="file.vhdl" enable="1"/>
         <File path="src/gowin_rpll/gowin_tmds_rpll.vhd" type="file.vhdl" enable="1"/>
-        <File path="src/gowin_clkdiv/gowin_clkdiv.vhd" type="file.vhdl" enable="1"/>
+        <File path="src/hdmi/hdmi_encoder.vhd" type="file.vhdl" enable="1"/>
+        <File path="src/hdmi/tmds_encoder.vhd" type="file.vhdl" enable="1"/>
         <File path="src/invaders.vhd" type="file.vhdl" enable="1"/>
         <File path="src/invaders_audio.vhd" type="file.vhdl" enable="1"/>
         <File path="src/invaders_top.vhd" type="file.vhdl" enable="1"/>
-        <File path="src/kbd_joystick.vhd" type="file.vhdl" enable="1"/>
-        <File path="src/hdmi/hdmi_encoder.vhd" type="file.vhdl" enable="1"/>
-        <File path="src/hdmi/tmds_encoder.vhd" type="file.vhdl" enable="1"/>
-        <File path="src/mw8080.vhd" type="file.vhdl" enable="1"/>
         <File path="src/invaders_video.vhd" type="file.vhdl" enable="1"/>
+        <File path="src/mw8080.vhd" type="file.vhdl" enable="1"/>
         <File path="src/TN9K-Invaders.cst" type="file.cst" enable="1"/>
+        <File path="src/TN9K-Invaders.sdc" type="file.sdc" enable="1"/>
     </FileList>
 </Project>

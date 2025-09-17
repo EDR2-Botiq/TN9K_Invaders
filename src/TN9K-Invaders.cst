@@ -28,10 +28,8 @@ IO_LOC "u_hdmi/elvds_clk" 69,68;
 IO_LOC "u_hdmi/elvds_blue" 71,70;  // Blue channel
 IO_LOC "u_hdmi/elvds_green" 73,72; // Green channel
 IO_LOC "u_hdmi/elvds_red" 75,74;   // Red channel
-IO_LOC "ps2_dat" 77;
-IO_PORT "ps2_dat" IO_TYPE=LVCMOS33 PULL_MODE=UP BANK_VCCIO=3.3;
-IO_LOC "ps2_clk" 76;
-IO_PORT "ps2_clk" IO_TYPE=LVCMOS33 PULL_MODE=UP BANK_VCCIO=3.3;
+IO_LOC "S2_BUTTON" 3;
+IO_PORT "S2_BUTTON" IO_TYPE=LVCMOS18 PULL_MODE=UP BANK_VCCIO=1.8;
 IO_LOC "I_RESET" 4;
 IO_PORT "I_RESET" IO_TYPE=LVCMOS18 PULL_MODE=UP BANK_VCCIO=1.8;
 IO_LOC "Clock_27" 52;

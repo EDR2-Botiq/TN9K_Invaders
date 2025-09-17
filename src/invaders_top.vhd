@@ -10,7 +10,7 @@
 -------------------------------------------------------------------------------
 --
 -- Space Invaders top level for
--- ps/2 keyboard interface with sound and scan doubler MikeJ
+-- HDMI display with sound and scan doubler
 --
 -- Version : 0300
 --
@@ -70,8 +70,7 @@ entity invaders_top is
 	port(
 		Clock_27          : in    std_logic;
 		I_RESET           : in    std_logic;
-        ps2_clk           : in    std_logic;
-        ps2_dat           : inout std_logic;
+		S2_BUTTON         : in    std_logic;  -- User button S2 (coin insert)
 		-- HDMI differential outputs
 		hdmi_tx_clk_p     : out   std_logic;
 		hdmi_tx_clk_n     : out   std_logic;
@@ -160,8 +159,6 @@ architecture rtl of invaders_top is
 	signal dblscan_vsync    : std_logic;
 	signal dblscan_de       : std_logic;
     --
-    signal kbd_intr        : std_logic;
-    signal kbd_scancode    : std_logic_vector(7 downto 0);
     signal joyHBCPPFRLDU   : std_logic_vector(9 downto 0);
     --
     constant CLOCK_FREQ    : integer := 27E6;
@@ -261,6 +258,11 @@ end component;
     begin
 
     reset <= not I_RESET;
+
+    -- Connect S2 button to coin insert (active low button, so invert)
+    -- joyHBCPPFRLDU bit assignments:
+    -- 7: Coin, 6: Sel2Player, 5: Sel1Player, 4: Fire, 3: Right, 2: Left, 1: Down, 0: Up
+    joyHBCPPFRLDU <= (7 => not S2_BUTTON, others => '0');
     pll_locked <= '1';
 ----------------------------------------------------------------------------------------------
 -- System clocks for game logic
@@ -570,27 +572,6 @@ vram_video_data <= vram_data_b;
         hdmi_tx_n     => hdmi_tx_n
     );
 ---------------------------------------------------------------------------------
--- get scancode from keyboard
-
-keyboard : entity work.io_ps2_keyboard
-port map (
-  clk       => clock_10, -- use same clock as main core
-  kbd_clk   => ps2_clk,
-  kbd_dat   => ps2_dat,
-  interrupt => kbd_intr,
-  scancode  => kbd_scancode
-);
----------------------------------------------------------------------------------
--- translate scancode to joystick
-
-joystick : entity work.kbd_joystick
-port map (
-  clk          => clock_10, -- use same clock as main core
-  kbdint       => kbd_intr,
-  kbdscancode  => std_logic_vector(kbd_scancode), 
-  joyHBCPPFRLDU => joyHBCPPFRLDU
-);
----------------------------------------------------------------------------------
   u_audio : entity work.invaders_audio
 	port map (
 	  Clk => Clock_10,
@@ -599,15 +580,16 @@ port map (
 	  Aud => Audio
 	  );
 ----------------------------------------------------------------------------------
-  u_dac : entity work.dac
+  -- 2nd order Sigma-Delta DAC for better audio quality
+  u_sigma_delta_dac : entity work.sigma_delta_dac
 	generic map(
-	  msbi_g => 7
+	  WIDTH => 8
 	)
 	port  map(
-	  clk_i   => Clock_10,
-	  res_n_i => Rst_n_s,
-	  dac_i   => Audio,
-	  dac_o   => AudioPWM
+	  clk     => Clock_20,  -- Use higher clock for better oversampling
+	  reset   => reset,
+	  data_in => Audio,
+	  dac_out => AudioPWM
 	);
 
   O_AUDIO_L <= AudioPWM;
