@@ -124,6 +124,8 @@ architecture rtl of invaders_top is
     --
 	signal Audio           : std_logic_vector(7 downto 0);
 	signal AudioPWM        : std_logic;
+	signal test_audio      : std_logic_vector(7 downto 0);
+	signal audio_counter   : unsigned(19 downto 0) := (others => '0');
 	-- HDMI signals
 	signal hdmi_rgb        : std_logic_vector(23 downto 0);
 	signal hdmi_de         : std_logic;
@@ -568,8 +570,8 @@ vram_video_data <= vram_data_b;
         hsync              => vram_tmds_hsync when use_vram_tmds = '1' else dblscan_hsync,
         vsync              => vram_tmds_vsync when use_vram_tmds = '1' else dblscan_vsync,
         de                 => vram_tmds_de when use_vram_tmds = '1' else dblscan_de,
-        audio_sample_left  => Audio & x"00",  -- Convert 8-bit to 16-bit (left channel)
-        audio_sample_right => Audio & x"00",  -- Convert 8-bit to 16-bit (right channel)
+        audio_sample_left  => x"00" & Audio,  -- Connect game audio (corrected bit order)
+        audio_sample_right => x"00" & Audio,  -- Connect game audio (corrected bit order)
         hdmi_tx_clk_p      => hdmi_tx_clk_p,
         hdmi_tx_clk_n      => hdmi_tx_clk_n,
         hdmi_tx_p          => hdmi_tx_p,
@@ -585,6 +587,21 @@ vram_video_data <= vram_data_b;
 	  );
 ----------------------------------------------------------------------------------
   -- 2nd order Sigma-Delta DAC for better audio quality
+  -- Force audio output for testing - bypass game entirely
+  process(Clock_20)
+    variable counter : unsigned(15 downto 0) := (others => '0');
+  begin
+    if rising_edge(Clock_20) then
+      counter := counter + 1;
+      -- Create test tone - ignore game audio completely
+      if counter(13) = '1' then  -- ~1.2kHz test tone
+        test_audio <= x"FF";  -- Maximum volume high
+      else
+        test_audio <= x"00";  -- Minimum volume low
+      end if;
+    end if;
+  end process;
+
   u_sigma_delta_dac : entity work.sigma_delta_dac
 	generic map(
 	  WIDTH => 8
@@ -592,12 +609,20 @@ vram_video_data <= vram_data_b;
 	port  map(
 	  clk     => Clock_20,  -- Use higher clock for better oversampling
 	  reset   => reset,
-	  data_in => Audio,
+	  data_in => test_audio,  -- Use test audio instead of raw Audio
 	  dac_out => AudioPWM
 	);
 
-  O_AUDIO_L <= AudioPWM;
-  O_AUDIO_R <= AudioPWM;
+  -- Bypass sigma-delta DAC entirely for testing
+  process(Clock_20)
+  begin
+    if rising_edge(Clock_20) then
+      audio_counter <= audio_counter + 1;
+    end if;
+  end process;
+
+  O_AUDIO_L <= audio_counter(13);  -- Direct square wave output ~1.2kHz
+  O_AUDIO_R <= audio_counter(13);
 ----------------------------------------------------------------------------------
 -- debug
 
