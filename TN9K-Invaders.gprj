@@ -15,9 +15,9 @@
         <File path="src/sigma_delta_dac.vhd" type="file.vhdl" enable="1"/>
         <File path="src/dpram.vhd" type="file.vhdl" enable="1"/>
         <File path="src/gen_ram.vhd" type="file.vhdl" enable="1"/>
-        <File path="src/gowin_clkdiv/gowin_clkdiv.vhd" type="file.vhdl" enable="1"/>
-        <File path="src/gowin_rpll/gowin_rpll.vhd" type="file.vhdl" enable="1"/>
-        <File path="src/gowin_rpll/gowin_tmds_rpll.vhd" type="file.vhdl" enable="1"/>
+        <File path="src/clocks/gowin_hdmi_clkdiv/gowin_hdmi_clkdiv.vhd" type="file.vhdl" enable="1"/>
+        <File path="src/clocks/gowin_hdmi_rpll/gowin_hdmi_rpll.vhd" type="file.vhdl" enable="1"/>
+        <File path="src/clocks/gowin_hdmi_rpll/gowin_tmds_rpll.vhd" type="file.vhdl" enable="1"/>
         <File path="src/hdmi/hdmi_encoder.vhd" type="file.vhdl" enable="1"/>
         <File path="src/hdmi/tmds_encoder.vhd" type="file.vhdl" enable="1"/>
         <File path="src/invaders.vhd" type="file.vhdl" enable="1"/>

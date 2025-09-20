@@ -10,16 +10,16 @@
 library IEEE;
 use IEEE.std_logic_1164.all;
 
-entity Gowin_rPLL is
+entity Gowin_HDMI_rPLL is
     port (
         clkout: out std_logic;
         lock: out std_logic;
         clkoutd: out std_logic;
         clkin: in std_logic
     );
-end Gowin_rPLL;
+end Gowin_HDMI_rPLL;
 
-architecture Behavioral of Gowin_rPLL is
+architecture Behavioral of Gowin_HDMI_rPLL is
 
     signal clkoutp_o: std_logic;
     signal clkoutd3_o: std_logic;
@@ -129,4 +129,4 @@ begin
             FDLY => FDLY_i
         );
 
-end Behavioral; --Gowin_rPLL
+end Behavioral; --Gowin_HDMI_rPLL

@@ -10,15 +10,15 @@
 library IEEE;
 use IEEE.std_logic_1164.all;
 
-entity Gowin_CLKDIV is
+entity Gowin_HDMI_CLKDIV is
     port (
         clkout: out std_logic;
         hclkin: in std_logic;
         resetn: in std_logic
     );
-end Gowin_CLKDIV;
+end Gowin_HDMI_CLKDIV;
 
-architecture Behavioral of Gowin_CLKDIV is
+architecture Behavioral of Gowin_HDMI_CLKDIV is
 
     signal gw_gnd: std_logic;
 
@@ -51,4 +51,4 @@ begin
             CALIB => gw_gnd
         );
 
-end Behavioral; --Gowin_CLKDIV
+end Behavioral; --Gowin_HDMI_CLKDIV

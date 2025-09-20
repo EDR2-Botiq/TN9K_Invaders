@@ -166,7 +166,7 @@ architecture rtl of invaders_top is
     signal clock_4hz       : std_logic;
     signal pll_locked      : std_logic;
 ---------------------------------------------------------------------------------------------
-component Gowin_rPLL
+component Gowin_HDMI_rPLL
     port (
         clkout: out std_logic;
         lock: out std_logic;
@@ -175,7 +175,7 @@ component Gowin_rPLL
     );
 end component;
 
-component Gowin_TMDS_rPLL
+component Gowin_HDMI_TMDS_rPLL
     port (
         clkout: out std_logic;
         lock: out std_logic;
@@ -183,7 +183,7 @@ component Gowin_TMDS_rPLL
     );
 end component;
 
-component Gowin_CLKDIV
+component Gowin_HDMI_CLKDIV
     port (
         clkout: out std_logic;
         hclkin: in std_logic;
@@ -266,7 +266,7 @@ end component;
     pll_locked <= '1';
 ----------------------------------------------------------------------------------------------
 -- System clocks for game logic
-clocks: Gowin_rPLL
+clocks: Gowin_HDMI_rPLL
     port map (
         clkout => clock_20,
         lock => pll_locked,
@@ -275,7 +275,7 @@ clocks: Gowin_rPLL
     );
 
 -- TMDS clock for HDMI output (126 MHz)
-tmds_clocks: Gowin_TMDS_rPLL
+tmds_clocks: Gowin_HDMI_TMDS_rPLL
     port map (
         clkout => clock_tmds,
         lock => open,
@@ -283,7 +283,7 @@ tmds_clocks: Gowin_TMDS_rPLL
     );
 
 -- Generate pixel clock from TMDS clock (126 MHz / 5 = 25.2 MHz) using Gowin CLKDIV
-pixel_clk_div: Gowin_CLKDIV
+pixel_clk_div: Gowin_HDMI_CLKDIV
     port map (
         clkout => clock_pixel,
         hclkin => clock_tmds,
