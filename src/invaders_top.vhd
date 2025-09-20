@@ -124,8 +124,6 @@ architecture rtl of invaders_top is
     --
 	signal Audio           : std_logic_vector(7 downto 0);
 	signal AudioPWM        : std_logic;
-	signal test_audio      : std_logic_vector(7 downto 0);
-	signal audio_counter   : unsigned(19 downto 0) := (others => '0');
 	-- HDMI signals
 	signal hdmi_rgb        : std_logic_vector(23 downto 0);
 	signal hdmi_de         : std_logic;
@@ -587,21 +585,6 @@ vram_video_data <= vram_data_b;
 	  );
 ----------------------------------------------------------------------------------
   -- 2nd order Sigma-Delta DAC for better audio quality
-  -- Force audio output for testing - bypass game entirely
-  process(Clock_20)
-    variable counter : unsigned(15 downto 0) := (others => '0');
-  begin
-    if rising_edge(Clock_20) then
-      counter := counter + 1;
-      -- Create test tone - ignore game audio completely
-      if counter(13) = '1' then  -- ~1.2kHz test tone
-        test_audio <= x"FF";  -- Maximum volume high
-      else
-        test_audio <= x"00";  -- Minimum volume low
-      end if;
-    end if;
-  end process;
-
   u_sigma_delta_dac : entity work.sigma_delta_dac
 	generic map(
 	  WIDTH => 8
@@ -609,20 +592,12 @@ vram_video_data <= vram_data_b;
 	port  map(
 	  clk     => Clock_20,  -- Use higher clock for better oversampling
 	  reset   => reset,
-	  data_in => test_audio,  -- Use test audio instead of raw Audio
+	  data_in => Audio,     -- Use game audio
 	  dac_out => AudioPWM
 	);
 
-  -- Bypass sigma-delta DAC entirely for testing
-  process(Clock_20)
-  begin
-    if rising_edge(Clock_20) then
-      audio_counter <= audio_counter + 1;
-    end if;
-  end process;
-
-  O_AUDIO_L <= audio_counter(13);  -- Direct square wave output ~1.2kHz
-  O_AUDIO_R <= audio_counter(13);
+  O_AUDIO_L <= AudioPWM;
+  O_AUDIO_R <= AudioPWM;
 ----------------------------------------------------------------------------------
 -- debug
 
