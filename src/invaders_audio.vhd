@@ -170,7 +170,7 @@ begin
     Aud_mix <= ("00" & saucerSound) + ("00" & saucerHitSound) + ("00" & invaderHitSound) 
 	      + ("00" & invaderMoveSound) + ("00" & missileSound) + ("00" & explosionSound) + ("00" & extraBaseSound);
 
-	 aud <= aud_mix(9 downto 2); -- Keep the output width the same as the original audio code	
+	 Aud <= aud_mix(9 downto 2); -- Keep the output width the same as the original audio code	
 	
 	-- Implement a Pseudo Random Noise Generator - same as schematic
 	process (noiseClk)

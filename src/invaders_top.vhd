@@ -175,7 +175,7 @@ component Gowin_HDMI_rPLL
     );
 end component;
 
-component Gowin_HDMI_TMDS_rPLL
+component Gowin_TMDS_rPLL
     port (
         clkout: out std_logic;
         lock: out std_logic;
@@ -193,17 +193,19 @@ end component;
 
 component hdmi_encoder
     port (
-        clk_pixel     : in  std_logic;
-        clk_tmds      : in  std_logic;
-        reset_n       : in  std_logic;
-        rgb_data      : in  std_logic_vector(23 downto 0);
-        hsync         : in  std_logic;
-        vsync         : in  std_logic;
-        de            : in  std_logic;
-        hdmi_tx_clk_p : out std_logic;
-        hdmi_tx_clk_n : out std_logic;
-        hdmi_tx_p     : out std_logic_vector(2 downto 0);
-        hdmi_tx_n     : out std_logic_vector(2 downto 0)
+        clk_pixel          : in  std_logic;
+        clk_tmds           : in  std_logic;
+        reset_n            : in  std_logic;
+        rgb_data           : in  std_logic_vector(23 downto 0);
+        hsync              : in  std_logic;
+        vsync              : in  std_logic;
+        de                 : in  std_logic;
+        audio_sample_left  : in  std_logic_vector(15 downto 0);
+        audio_sample_right : in  std_logic_vector(15 downto 0);
+        hdmi_tx_clk_p      : out std_logic;
+        hdmi_tx_clk_n      : out std_logic;
+        hdmi_tx_p          : out std_logic_vector(2 downto 0);
+        hdmi_tx_n          : out std_logic_vector(2 downto 0)
     );
 end component;
 
@@ -275,7 +277,7 @@ clocks: Gowin_HDMI_rPLL
     );
 
 -- TMDS clock for HDMI output (126 MHz)
-tmds_clocks: Gowin_HDMI_TMDS_rPLL
+tmds_clocks: Gowin_TMDS_rPLL
     port map (
         clkout => clock_tmds,
         lock => open,
@@ -559,17 +561,19 @@ vram_video_data <= vram_data_b;
 
   u_hdmi: hdmi_encoder
     port map (
-        clk_pixel     => clock_pixel,
-        clk_tmds      => clock_tmds,
-        reset_n       => I_RESET,
-        rgb_data      => hdmi_rgb,
-        hsync         => vram_tmds_hsync when use_vram_tmds = '1' else dblscan_hsync,
-        vsync         => vram_tmds_vsync when use_vram_tmds = '1' else dblscan_vsync,
-        de            => vram_tmds_de when use_vram_tmds = '1' else dblscan_de,
-        hdmi_tx_clk_p => hdmi_tx_clk_p,
-        hdmi_tx_clk_n => hdmi_tx_clk_n,
-        hdmi_tx_p     => hdmi_tx_p,
-        hdmi_tx_n     => hdmi_tx_n
+        clk_pixel          => clock_pixel,
+        clk_tmds           => clock_tmds,
+        reset_n            => I_RESET,
+        rgb_data           => hdmi_rgb,
+        hsync              => vram_tmds_hsync when use_vram_tmds = '1' else dblscan_hsync,
+        vsync              => vram_tmds_vsync when use_vram_tmds = '1' else dblscan_vsync,
+        de                 => vram_tmds_de when use_vram_tmds = '1' else dblscan_de,
+        audio_sample_left  => Audio & x"00",  -- Convert 8-bit to 16-bit (left channel)
+        audio_sample_right => Audio & x"00",  -- Convert 8-bit to 16-bit (right channel)
+        hdmi_tx_clk_p      => hdmi_tx_clk_p,
+        hdmi_tx_clk_n      => hdmi_tx_clk_n,
+        hdmi_tx_p          => hdmi_tx_p,
+        hdmi_tx_n          => hdmi_tx_n
     );
 ---------------------------------------------------------------------------------
   u_audio : entity work.invaders_audio
