@@ -2,7 +2,7 @@
 -- 9.984MHz clock
 --
 -- Based on pinballwizz/TangNano9K-Invaders
--- Adapted for HDMI and SNES controller by Terence Ang - EDR² (Eat, Drink, Repair and Repeat)
+-- Adapted for HDMI and SFC controller by Terence Ang - EDR² (Eat, Drink, Repair and Repeat)
 --
 -- Version : 0242
 --

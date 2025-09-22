@@ -12,19 +12,28 @@
         <File path="src/T80/T80_Pack.vhd" type="file.vhdl" enable="1"/>
         <File path="src/T80/T80_Reg.vhd" type="file.vhdl" enable="1"/>
         <File path="src/T8080se.vhd" type="file.vhdl" enable="1"/>
-        <File path="src/sigma_delta_dac.vhd" type="file.vhdl" enable="1"/>
         <File path="src/dpram.vhd" type="file.vhdl" enable="1"/>
         <File path="src/gen_ram.vhd" type="file.vhdl" enable="1"/>
-        <File path="src/clocks/gowin_hdmi_clkdiv/gowin_hdmi_clkdiv.vhd" type="file.vhdl" enable="1"/>
-        <File path="src/clocks/gowin_hdmi_rpll/gowin_hdmi_rpll.vhd" type="file.vhdl" enable="1"/>
-        <File path="src/clocks/gowin_hdmi_rpll/gowin_tmds_rpll.vhd" type="file.vhdl" enable="1"/>
-        <File path="src/hdmi/hdmi_encoder.vhd" type="file.vhdl" enable="1"/>
-        <File path="src/hdmi/tmds_encoder.vhd" type="file.vhdl" enable="1"/>
+        <File path="src/clocks/gowin_hdmi_clkdiv/gowin_hdmi_clkdiv.v" type="file.verilog" enable="1"/>
+        <File path="src/clocks/gowin_rpll/gowin_game_rpll.vhd" type="file.vhdl" enable="1"/>
+        <File path="src/clocks/gowin_rpll/gowin_tmds_rpll.v" type="file.verilog" enable="1"/>
+        <File path="src/hdmi/audio_clock_regeneration_packet.sv" type="file.verilog" enable="1" language_version="systemverilog_2005"/>
+        <File path="src/hdmi/audio_info_frame.sv" type="file.verilog" enable="1" language_version="systemverilog_2005"/>
+        <File path="src/hdmi/audio_sample_packet.sv" type="file.verilog" enable="1" language_version="systemverilog_2005"/>
+        <File path="src/hdmi/auxiliary_video_information_info_frame.sv" type="file.verilog" enable="1" language_version="systemverilog_2005"/>
+        <File path="src/hdmi/hdmi.sv" type="file.verilog" enable="1" language_version="systemverilog_2005"/>
+        <File path="src/hdmi/packet_assembler.sv" type="file.verilog" enable="1" language_version="systemverilog_2005"/>
+        <File path="src/hdmi/packet_picker.sv" type="file.verilog" enable="1" language_version="systemverilog_2005"/>
+        <File path="src/hdmi/serializer.sv" type="file.verilog" enable="1" language_version="systemverilog_2005"/>
+        <File path="src/hdmi/source_product_description_info_frame.sv" type="file.verilog" enable="1" language_version="systemverilog_2005"/>
+        <File path="src/hdmi/tmds_channel.sv" type="file.verilog" enable="1" language_version="systemverilog_2005"/>
+        <File path="src/hdmi/hdmi_encoder.sv" type="file.verilog" enable="1" language_version="systemverilog_2005"/>
         <File path="src/invaders.vhd" type="file.vhdl" enable="1"/>
         <File path="src/invaders_audio.vhd" type="file.vhdl" enable="1"/>
         <File path="src/invaders_top.vhd" type="file.vhdl" enable="1"/>
         <File path="src/invaders_video.vhd" type="file.vhdl" enable="1"/>
         <File path="src/mw8080.vhd" type="file.vhdl" enable="1"/>
+        <File path="src/sfc_controller.vhd" type="file.vhdl" enable="1"/>
         <File path="src/TN9K-Invaders.cst" type="file.cst" enable="1"/>
         <File path="src/TN9K-Invaders.sdc" type="file.sdc" enable="1"/>
     </FileList>

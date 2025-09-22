@@ -1,11 +1,11 @@
 # Tang Nano 9K Hardware Connection Guide
-## SNES Controller & Audio Circuit Diagrams
+## SFC Controller & Audio Circuit Diagrams
 
 ---
 
-## 🎮 SNES Controller Connection
+## 🎮 SFC Controller Connection
 
-### SNES Controller Pinout (Looking at Controller Port)
+### SFC Controller Pinout (Looking at Controller Port)
 ```
     ╭─────────────╮
     │ 1 2 3 4 │ 5 6 7 │
@@ -24,7 +24,7 @@ Pin 7: Ground
 ### Connection Diagram to Tang Nano 9K
 
 ```
-SNES Controller                     Tang Nano 9K
+SFC Controller                      Tang Nano 9K
     Port                               FPGA
 
     Pin 1 (VCC) ─────────────────── 3.3V or 5V
@@ -33,7 +33,7 @@ SNES Controller                     Tang Nano 9K
     Pin 2 (Clock) ──────┐
                         │
                     [1kΩ]           Pin 76
-                        ├────────── (SNES_CLK)
+                        ├────────── (SFC_CLK)
                     [10kΩ]
                         │
                        GND
@@ -41,7 +41,7 @@ SNES Controller                     Tang Nano 9K
     Pin 3 (Latch) ──────┐
                         │
                     [1kΩ]           Pin 75
-                        ├────────── (SNES_LATCH)
+                        ├────────── (SFC_LATCH)
                     [10kΩ]
                         │
                        GND
@@ -49,7 +49,7 @@ SNES Controller                     Tang Nano 9K
     Pin 4 (Data) ───────┐
                         │
                     [1kΩ]           Pin 77
-                        ├────────── (SNES_DATA)
+                        ├────────── (SFC_DATA)
                     [10kΩ]
                         │
                        3.3V
@@ -60,7 +60,7 @@ SNES Controller                     Tang Nano 9K
 
 ### Level Shifting Circuit (If Using 5V Controller)
 ```
-SNES 5V Signal              Tang Nano 9K 3.3V
+SFC 5V Signal              Tang Nano 9K 3.3V
 
 Data Out ──┬──[1kΩ]──┬────── FPGA Pin 77
            │         │
@@ -85,7 +85,7 @@ Latch ─────[1kΩ]──┬────────── FPGA Pin 75
 - 3x 1kΩ resistors (series protection)
 - 3x 10kΩ resistors (pull-down for clock/latch, pull-up for data)
 - 1x 2.2kΩ resistor (voltage divider if 5V controller)
-- SNES controller extension cable (to cut and wire)
+- SFC controller extension cable (to cut and wire)
 
 ---
 
@@ -200,10 +200,10 @@ Note: Sigma-Delta DAC typically needs only simple RC filtering
 
 | Function | Tang Nano 9K Pin | Direction | Voltage | External Connection |
 |----------|-----------------|-----------|---------|-------------------|
-| **SNES Controller** |
-| SNES_LATCH | 75 | Output | 3.3V | SNES Pin 3 via 1kΩ |
-| SNES_CLOCK | 76 | Output | 3.3V | SNES Pin 2 via 1kΩ |
-| SNES_DATA | 77 | Input | 3.3V | SNES Pin 4 via 1kΩ |
+| **SFC Controller** |
+| SFC_LATCH | 75 | Output | 3.3V | SFC Pin 3 via 1kΩ |
+| SFC_CLOCK | 76 | Output | 3.3V | SFC Pin 2 via 1kΩ |
+| SFC_DATA | 77 | Input | 3.3V | SFC Pin 4 via 1kΩ |
 | **Audio (Mono)** |
 | L_AUDIO | 33 | Output | 3.3V Σ-Δ | Same mono signal |
 | R_AUDIO | 34 | Output | 3.3V Σ-Δ | Same mono signal |
@@ -211,15 +211,15 @@ Note: Sigma-Delta DAC typically needs only simple RC filtering
 | S1_RESET | 4 | Input | 1.8V | Internal Pull-up |
 | S2_COIN | 3 | Input | 1.8V | Internal Pull-up |
 | **Power** |
-| VCC_3V3 | 1, 2 | Power | 3.3V | SNES VCC |
+| VCC_3V3 | 1, 2 | Power | 3.3V | SFC VCC |
 | GND | 24,48,88 | Ground | 0V | Common Ground |
 
 ---
 
 ## ⚠️ Important Notes
 
-### SNES Controller
-1. **Voltage Levels**: SNES controllers work with both 3.3V and 5V
+### SFC Controller
+1. **Voltage Levels**: SFC controllers work with both 3.3V and 5V
 2. **Pull-up on Data**: Data line requires pull-up (controller pulls low)
 3. **Pull-down on Control**: Clock and Latch need pull-downs
 4. **Timing**:
@@ -245,9 +245,9 @@ Note: Sigma-Delta DAC typically needs only simple RC filtering
 
 ## 🔧 Testing Procedure
 
-### SNES Controller Test
+### SFC Controller Test
 1. Connect controller with protection resistors
-2. Load bitstream with SNES controller support
+2. Load bitstream with SFC controller support
 3. Monitor button presses via LED indicators
 4. Verify all 12 buttons register correctly
 
@@ -267,7 +267,7 @@ Note: Sigma-Delta DAC typically needs only simple RC filtering
 ┌─────────────────────────────────┐
 │  Tang Nano 9K Expansion Board    │
 │                                  │
-│  [SNES Port]     [3.5mm Audio]  │
+│  [SFC Port]     [3.5mm Audio]  │
 │      :::             ○           │
 │                                  │
 │  Protection      Filter/Amp     │
@@ -284,7 +284,7 @@ Note: Sigma-Delta DAC typically needs only simple RC filtering
 - Ground plane for noise reduction
 - 0805 SMD components for compactness
 - Pin headers for Tang Nano 9K connection
-- Right-angle SNES connector
+- Right-angle SFC connector
 - 3.5mm stereo jack for audio
 - Optional: LM386 amplifier section
 - Optional: Volume potentiometer
@@ -293,7 +293,7 @@ Note: Sigma-Delta DAC typically needs only simple RC filtering
 
 ## 📚 References
 
-- SNES Controller Protocol: https://gamefaqs.gamespot.com/snes/916396-super-nintendo/faqs/5395
+- SFC Controller Protocol: https://gamefaqs.gamespot.com/snes/916396-super-nintendo/faqs/5395
 - LM386 Datasheet: https://www.ti.com/lit/ds/symlink/lm386.pdf
 - RC Filter Calculator: https://www.omnicalculator.com/physics/low-pass-filter
 - Tang Nano 9K Schematic: See Tang_Nano_9k_3672_Schematic.pdf

@@ -7,10 +7,10 @@
 
 -mod_name Gowin_TMDS_rPLL
 -file_name gowin_tmds_rpll
--path E:/OneDrive/Desktop/FPGA/TN9K_SI/src/gowin_rpll/
+-path C:/Users/teren/OneDrive/Desktop/FPGA/TN9K_HDMI/src/clocks/
 -type PLL
 -rPll true
--file_type vhdl
+-file_type vlg
 -dev_type GW1NR-9C
 -dyn_idiv_sel false
 -idiv_sel 3

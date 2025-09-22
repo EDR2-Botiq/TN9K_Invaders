@@ -9,7 +9,7 @@
 A complete recreation of the classic 1978 Space Invaders arcade game for the Tang Nano 9K FPGA development board. This project implements a cycle-accurate Intel 8080 CPU core and authentic arcade hardware to deliver the original gaming experience on modern displays via HDMI.
 
 **Based on original code from [pinballwizz/TangNano9K-Invaders](https://github.com/pinballwizz/TangNano9K-Invaders)**
-**Adapted for HDMI output and SNES controller by Terence Ang at EDR² (Eat, Drink, Repair and Repeat)**
+**Adapted for HDMI output and SFC controller by Terence Ang at EDR² (Eat, Drink, Repair and Repeat)**
 
 ![Space Invaders Screenshot](Documents/images/space_invaders_gameplay.png)
 
@@ -18,18 +18,18 @@ A complete recreation of the classic 1978 Space Invaders arcade game for the Tan
 - **Authentic Hardware Recreation**: Complete Intel 8080 CPU core implementation
 - **Original Game Logic**: Faithful recreation of Space Invaders arcade behavior
 - **🆕 HDMI Output**: Modern display support with scan doubler for 640x480@60Hz displays ✅
-- **🆕 SNES Controller**: Classic gamepad support replacing original arcade controls ⚠️ *Not Tested*
+- **🆕 SFC Controller**: Classic gamepad support replacing original arcade controls ⚠️ *Not Tested*
 - **High-Quality Audio**: PWM audio output with original sound effects ⚠️ *Not Tested*
 - **Efficient Design**: Optimized for Tang Nano 9K's GW1NR-9C FPGA resources
 
 ### Key Adaptations from Original
 - **HDMI Video**: Replaced VGA output with full HDMI implementation ✅ **Tested**
-- **SNES Input**: Added SNES controller interface for modern gaming experience ⚠️ **Not Tested**
+- **SFC Input**: Added SFC controller interface for modern gaming experience ⚠️ **Not Tested**
 - **Enhanced Compatibility**: Improved timing and display compatibility
 
 ### ⚠️ Testing Status
 - **✅ HDMI Video Output**: Fully tested and working
-- **⚠️ SNES Controller**: Implementation complete but not hardware tested
+- **⚠️ SFC Controller**: Implementation complete but not hardware tested
 - **⚠️ Audio Output**: Implementation complete but not hardware tested
 - **✅ FPGA Build**: Synthesis and place & route verified
 
@@ -40,20 +40,20 @@ A complete recreation of the classic 1978 Space Invaders arcade game for the Tan
 - **Tang Nano 9K FPGA Board** (GW1NR-9C)
 - **Gowin EDA v1.9.12** or later
 - **HDMI Display** (640x480@60Hz or higher)
-- **SNES Controller** (standard or compatible)
+- **SFC Controller** (standard or compatible)
 - **USB-C Cable** for power and programming
 
 ### Hardware Setup
 
 1. **Connect HDMI Display**: Use any HDMI cable to connect your display ✅ **Tested**
-2. **Connect SNES Controller**: ⚠️ **Not Hardware Tested**
-   - Pin 75: SNES Latch (output)
-   - Pin 76: SNES Clock (output)
-   - Pin 77: SNES Data (input)
+2. **Connect SFC Controller**: ⚠️ **Not Hardware Tested**
+   - Pin 75: SFC Latch (output)
+   - Pin 76: SFC Clock (output)
+   - Pin 77: SFC Data (input)
    - VCC: 3.3V or 5V, GND: Ground
 3. **Power via USB-C**: Connect to computer or USB power adapter
 
-> **⚠️ Important**: SNES controller and audio functionality are implemented but not yet tested on hardware. HDMI video output is fully verified.
+> **⚠️ Important**: SFC controller and audio functionality are implemented but not yet tested on hardware. HDMI video output is fully verified.
 
 ### Building and Programming
 
@@ -104,7 +104,7 @@ See [Documents/ROM_CONVERSION.md](Documents/ROM_CONVERSION.md) for detailed inst
          │                       │                       │
          ▼                       ▼                       ▼
 ┌─────────────────┐    ┌──────────────────┐    ┌─────────────────┐
-│  Game ROM       │    │  Audio Engine    │    │  SNES Controller│
+│  Game ROM       │    │  Audio Engine    │    │  SFC Controller │
 │  (BRAM)         │    │  (PWM Output)    │    │  Interface      │
 └─────────────────┘    └──────────────────┘    └─────────────────┘
 ```
@@ -215,7 +215,7 @@ See [Documents/BUILD.md](Documents/BUILD.md) for comprehensive build instruction
 ### Compatibility
 - **Tang Nano 9K**: GW1NR-9C FPGA (primary target)
 - **HDMI Displays**: 640x480@60Hz minimum
-- **Controllers**: Standard SNES gamepads
+- **Controllers**: Standard SFC gamepads
 - **Power**: USB-C, 5V/1A minimum
 
 ## 🤝 Contributing
@@ -250,7 +250,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ### Project Contributors
 - **Original Project**: [pinballwizz/TangNano9K-Invaders](https://github.com/pinballwizz/TangNano9K-Invaders)
-- **HDMI/SNES Adaptation**: Terence Ang
+- **HDMI/SFC Adaptation**: Terence Ang
 - **Company**: EDR² (Eat,Drink,Repair and Repeat)
 - **Development**: Created with assistance from Claude Code (Anthropic)
 - **CPU Core**: Based on T80 core by Daniel Wallner

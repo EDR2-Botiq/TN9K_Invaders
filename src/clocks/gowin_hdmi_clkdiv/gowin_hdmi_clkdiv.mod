@@ -1,14 +1,14 @@
--series GW1NR
--device GW1NR-9
--device_version C
--package QFN88P
--part_number GW1NR-LV9QN88PC6/I5
+-series 
+-device 
+-device_version 
+-package 
+-part_number 
 
 
--mod_name Gowin_CLKDIV
--file_name gowin_clkdiv
--path E:/OneDrive/Desktop/FPGA/TN9K_SI/src/gowin_clkdiv/
+-mod_name Gowin_HDMI_CLKDIV
+-file_name gowin_hdmi_clkdiv
+-path C:/Users/teren/OneDrive/Desktop/FPGA/TN9K_HDMI/src/clocks/
 -type CLKDIV
--file_type vhdl
+-file_type vlg
 -division_factor 5
 -calib false

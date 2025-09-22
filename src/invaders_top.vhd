@@ -3,7 +3,7 @@
 --                     For Original Code  (see notes below)
 --
 --               Based on pinballwizz/TangNano9K-Invaders
---           Adapted for HDMI output and SNES controller
+--           Adapted for HDMI output and SFC controller
 --                        by Terence Ang - EDR²
 --                    (Eat, Drink, Repair and Repeat)
 --                               2025
@@ -71,13 +71,18 @@ entity invaders_top is
 		Clock_27          : in    std_logic;
 		I_RESET           : in    std_logic;
 		S2_BUTTON         : in    std_logic;  -- User button S2 (coin insert)
+
+		-- SFC Controller interface
+		SFC_LATCH         : out   std_logic;  -- Latch signal to controller
+		SFC_CLK           : out   std_logic;  -- Clock signal to controller
+		SFC_DATA          : in    std_logic;  -- Data from controller
+
 		-- HDMI differential outputs
 		hdmi_tx_clk_p     : out   std_logic;
 		hdmi_tx_clk_n     : out   std_logic;
 		hdmi_tx_p         : out   std_logic_vector(2 downto 0);
 		hdmi_tx_n         : out   std_logic_vector(2 downto 0);
-		O_AUDIO_L         : out   std_logic;
-		O_AUDIO_R         : out   std_logic;
+		O_AUDIO           : out   std_logic;  -- Mono audio output
         led               : out    std_logic_vector(5 downto 0)
 		);
 end invaders_top;
@@ -93,13 +98,12 @@ architecture rtl of invaders_top is
 	signal DIP             : std_logic_vector(8 downto 1);
 	signal RWE_n           : std_logic;
 	signal Video           : std_logic;
-	signal VideoRGB        : std_logic_vector(2 downto 0);
-	signal VideoRGB_X2     : std_logic_vector(7 downto 0);
+	-- VideoRGB signals removed - color processing now handled in si_vram_to_tmds_portrait480
 	signal HSync           : std_logic;
 	signal VSync           : std_logic;
 	signal HSync_X2        : std_logic;
 	signal VSync_X2        : std_logic;
-	signal scanlines       : std_logic;
+	-- scanlines signal removed - not used with direct VRAM processing
     --
 	signal AD              : std_logic_vector(15 downto 0);
 	signal RAB             : std_logic_vector(12 downto 0);
@@ -114,29 +118,17 @@ architecture rtl of invaders_top is
 	signal rom_data_0      : std_logic_vector(7 downto 0);
 	signal ram_we          : std_logic;
 	--
-	signal HCnt            : std_logic_vector(11 downto 0);
-	signal VCnt            : std_logic_vector(11 downto 0);
-	signal HSync_t1        : std_logic;
-	signal Overlay_G1      : boolean;
-	signal Overlay_G2      : boolean;
-	signal Overlay_R1      : boolean;
-	signal Overlay_G1_VCnt : boolean;
+	-- Overlay signals removed - color processing now handled in si_vram_to_tmds_portrait480
     --
 	signal Audio           : std_logic_vector(7 downto 0);
-	signal AudioPWM        : std_logic;
 	-- HDMI signals
 	signal hdmi_rgb        : std_logic_vector(23 downto 0);
-	signal hdmi_de         : std_logic;
-	signal hdmi_hsync      : std_logic;
-	signal hdmi_vsync      : std_logic;
-	signal hdmi_h_count    : unsigned(9 downto 0);
-	signal hdmi_v_count    : unsigned(9 downto 0);
-	signal hdmi_active     : std_logic;
-	-- Test pattern signals
-	signal test_pattern_r  : std_logic_vector(7 downto 0);
-	signal test_pattern_g  : std_logic_vector(7 downto 0);
-	signal test_pattern_b  : std_logic_vector(7 downto 0);
-	signal use_test_pattern : std_logic := '0';  -- Set to '1' for test mode, '0' for game
+	-- HDMI mono audio sample rate generation (48 kHz from 25.2 MHz)
+	signal audio_sample_tick : std_logic;
+	signal audio_sample_counter : unsigned(9 downto 0) := (others => '0');
+	signal audio_mono_reg : std_logic_vector(15 downto 0);  -- Mono audio sampled at 48 kHz
+	constant AUDIO_SAMPLE_DIV : natural := 525; -- 25,200,000 / 48,000 = 525
+	-- Removed test pattern signals
 
 	-- VRAM-to-TMDS signals
 	signal vram_video_addr  : std_logic_vector(15 downto 0);
@@ -147,23 +139,19 @@ architecture rtl of invaders_top is
 	signal vram_tmds_hsync  : std_logic;
 	signal vram_tmds_vsync  : std_logic;
 	signal vram_tmds_de     : std_logic;
-	signal use_vram_tmds    : std_logic := '1';  -- Set to '1' for direct VRAM, '0' for processed game with color overlay
+	-- Removed test mode signal
 
 	-- Dual-port VRAM signals for independent CPU and Video access
 	signal vram_addr_b      : std_logic_vector(12 downto 0);  -- Video read address (port B)
 	signal vram_data_b      : std_logic_vector(7 downto 0);   -- Video read data (port B)
 
-	-- Enhanced dblscan with color overlay signals
-	signal dblscan_rgb      : std_logic_vector(23 downto 0);  -- 24-bit RGB from dblscan
-	signal dblscan_hsync    : std_logic;
-	signal dblscan_vsync    : std_logic;
-	signal dblscan_de       : std_logic;
+	-- Removed DBLSCAN signals - using direct VRAM-to-TMDS instead
     --
     signal joyHBCPPFRLDU   : std_logic_vector(9 downto 0);
+    signal sfc_buttons     : std_logic_vector(11 downto 0);
     --
     constant CLOCK_FREQ    : integer := 27E6;
-    signal counter_clk     : std_logic_vector(25 downto 0);
-    signal clock_4hz       : std_logic;
+    -- Removed debug clock signals
     signal pll_locked      : std_logic;
 ---------------------------------------------------------------------------------------------
 component Gowin_HDMI_rPLL
@@ -175,7 +163,7 @@ component Gowin_HDMI_rPLL
     );
 end component;
 
-component Gowin_HDMI_TMDS_rPLL
+component Gowin_TMDS_rPLL
     port (
         clkout: out std_logic;
         lock: out std_logic;
@@ -193,51 +181,29 @@ end component;
 
 component hdmi_encoder
     port (
-        clk_pixel     : in  std_logic;
-        clk_tmds      : in  std_logic;
-        reset_n       : in  std_logic;
-        rgb_data      : in  std_logic_vector(23 downto 0);
-        hsync         : in  std_logic;
-        vsync         : in  std_logic;
-        de            : in  std_logic;
-        hdmi_tx_clk_p : out std_logic;
-        hdmi_tx_clk_n : out std_logic;
-        hdmi_tx_p     : out std_logic_vector(2 downto 0);
-        hdmi_tx_n     : out std_logic_vector(2 downto 0)
+        clk_pixel          : in  std_logic;
+        clk_tmds           : in  std_logic;
+        reset_n            : in  std_logic;
+        rgb_data           : in  std_logic_vector(23 downto 0);
+        hsync              : in  std_logic;
+        vsync              : in  std_logic;
+        de                 : in  std_logic;
+        audio_sample_left  : in  std_logic_vector(15 downto 0);
+        audio_sample_right : in  std_logic_vector(15 downto 0);
+        hdmi_tx_clk_p      : out std_logic;
+        hdmi_tx_clk_n      : out std_logic;
+        hdmi_tx_p          : out std_logic_vector(2 downto 0);
+        hdmi_tx_n          : out std_logic_vector(2 downto 0)
     );
 end component;
 
-component hdmi_timing
-    port (
-        clk_pixel   : in  std_logic;
-        reset_n     : in  std_logic;
-        hsync       : out std_logic;
-        vsync       : out std_logic;
-        de          : out std_logic;
-        h_count     : out unsigned(9 downto 0);
-        v_count     : out unsigned(9 downto 0);
-        active      : out std_logic
-    );
-end component;
+-- hdmi_timing component removed - using si_vram_to_tmds_portrait480 timing directly
 
-component hdmi_test_pattern
-    port (
-        clk_pixel   : in  std_logic;
-        reset_n     : in  std_logic;
-        h_count     : in  unsigned(9 downto 0);
-        v_count     : in  unsigned(9 downto 0);
-        active      : in  std_logic;
-        pattern_sel : in  std_logic_vector(2 downto 0);
-        auto_cycle  : in  std_logic;
-        r           : out std_logic_vector(7 downto 0);
-        g           : out std_logic_vector(7 downto 0);
-        b           : out std_logic_vector(7 downto 0)
-    );
-end component;
+-- Removed test pattern component
 
 component si_vram_to_tmds_portrait480
     generic (
-        LSB_LEFT : boolean := true;
+        LSB_LEFT : boolean := false;  -- Match entity default
         PIPE_LAT : natural := 2
     );
     port (
@@ -259,10 +225,27 @@ end component;
 
     reset <= not I_RESET;
 
-    -- Connect S2 button to coin insert (active low button, so invert)
+    -- Connect both S2 button and SFC controller to game controls
     -- joyHBCPPFRLDU bit assignments:
-    -- 7: Coin, 6: Sel2Player, 5: Sel1Player, 4: Fire, 3: Right, 2: Left, 1: Down, 0: Up
-    joyHBCPPFRLDU <= (7 => not S2_BUTTON, others => '0');
+    -- 9: Fire2, 8: Fire, 7: Coin, 6: Sel2Player, 5: Sel1Player, 4: Fire, 3: Right, 2: Left, 1: Down, 0: Up
+    --
+    -- SFC Controller Mapping (active-low, 0 = pressed):
+    -- Fire: B button (bit 0) and A button (bit 8)
+    -- Movement: D-pad Left (bit 6), Right (bit 7), Up (bit 4), Down (bit 5)
+    -- Insert Coin: Select button (bit 2) → joyHBCPPFRLDU(7)
+    -- Start 1P/2P: Start button (bit 3) → joyHBCPPFRLDU(5) and joyHBCPPFRLDU(6)
+    joyHBCPPFRLDU <= (
+        9 => not sfc_buttons(8),   -- A button -> Fire2
+        8 => not sfc_buttons(0),   -- B button -> Fire
+        7 => not S2_BUTTON or not sfc_buttons(2), -- S2 button or SELECT -> Insert Coin
+        6 => not sfc_buttons(3),   -- START -> Start 2P Game (Sel2Player)
+        5 => not sfc_buttons(3),   -- START -> Start 1P Game (Sel1Player)
+        4 => not sfc_buttons(0),   -- B button -> Fire (backup)
+        3 => not sfc_buttons(7),   -- D-pad RIGHT -> Move Right
+        2 => not sfc_buttons(6),   -- D-pad LEFT -> Move Left
+        1 => not sfc_buttons(5),   -- D-pad DOWN -> Down (unused in SI)
+        0 => not sfc_buttons(4)    -- D-pad UP -> Up (unused in SI)
+    );
     pll_locked <= '1';
 ----------------------------------------------------------------------------------------------
 -- System clocks for game logic
@@ -271,11 +254,11 @@ clocks: Gowin_HDMI_rPLL
         clkout => clock_20,
         lock => pll_locked,
         clkoutd => clock_10,
-        clkin => clock_27
+        clkin => Clock_27
     );
 
 -- TMDS clock for HDMI output (126 MHz)
-tmds_clocks: Gowin_HDMI_TMDS_rPLL
+tmds_clocks: Gowin_TMDS_rPLL
     port map (
         clkout => clock_tmds,
         lock => open,
@@ -295,7 +278,7 @@ pixel_clk_div: Gowin_HDMI_CLKDIV
 	core : entity work.invaders
 		port map(
 			Rst_n      => I_RESET,
-			Clk        => Clock_10,
+			Clk        => clock_10,
 			MoveLeft   => not joyHBCPPFRLDU(2),
 			MoveRight  => not joyHBCPPFRLDU(3),
 			Coin       => joyHBCPPFRLDU(7),
@@ -320,7 +303,7 @@ pixel_clk_div: Gowin_HDMI_CLKDIV
 -- Rom
 	u_rom : entity work.invaders_rom
 	  port map (
-		clk         => Clock_10,
+		clk         => clock_10,
 		addr        => AD(12 downto 0),
 		data        => rom_data_0
 		);
@@ -348,7 +331,7 @@ generic map (
 )
 port map (
 	-- Port A: CPU access (10 MHz)
-	clock_a   => Clock_10,
+	clock_a   => clock_10,
 	enable_a  => '1',
 	wren_a    => ram_we,
 	address_a => RAB,
@@ -367,14 +350,21 @@ port map (
 
 -- VRAM video read port (Port B) address generation and data reconstruction
 -- Convert 16-bit VRAM address from TMDS module to 13-bit RAM address
+-- Space Invaders VRAM: 0x2400-0x3FFF (7168 bytes) maps to RAM 0x0400-0x1FFF
 process(clock_pixel)
+    variable vram_offset : unsigned(15 downto 0);
 begin
     if rising_edge(clock_pixel) then
-        -- Convert 16-bit address (0x2400-0x3FFF) to 13-bit RAM address
         -- VRAM region 0x2400-0x3FFF maps to RAM addresses 0x0400-0x1FFF (13-bit)
         if unsigned(vram_video_addr) >= 16#2400# and unsigned(vram_video_addr) <= 16#3FFF# then
-            -- Convert to 13-bit address space: subtract 0x2000 to get offset in RAM space
-            vram_addr_b <= std_logic_vector(unsigned(vram_video_addr(12 downto 0)) - to_unsigned(16#2000#, 13));
+            -- Calculate offset from VRAM base and map to RAM address space
+            vram_offset := unsigned(vram_video_addr) - 16#2000#;
+            -- Ensure we stay within 13-bit address space (0x1FFF max)
+            if vram_offset <= 16#1FFF# then
+                vram_addr_b <= std_logic_vector(vram_offset(12 downto 0));
+            else
+                vram_addr_b <= (others => '0');  -- Clamp overflow addresses
+            end if;
         else
             vram_addr_b <= (others => '0');  -- Default to 0 for out-of-range addresses
         end if;
@@ -388,13 +378,13 @@ vram_video_data <= vram_data_b;
 -----------------------------------------------------------------------------------------
 -- Glue
 
-	process (Rst_n_s, Clock_10)
+	process (Rst_n_s, clock_10)
 		variable cnt : unsigned(3 downto 0);
 	begin
 		if Rst_n_s = '0' then
 			cnt := "0000";
 			Tick1us <= '0';
-		elsif Clock_10'event and Clock_10 = '1' then
+		elsif clock_10'event and clock_10 = '1' then
 			Tick1us <= '0';
 			if cnt = 9 then
 				Tick1us <= '1';
@@ -405,132 +395,52 @@ vram_video_data <= vram_data_b;
 		end if;
 	end process;
 -----------------------------------------------------------------------------------------
--- scanlines control
-
-	process (Rst_n_s, Clock_10)
-       begin
-        if joyHBCPPFRLDU(0) = '1' then scanlines <= '0'; end if; --up arrow
-        if joyHBCPPFRLDU(1) = '1' then scanlines <= '1'; end if; --down arrow
-	end process;
+-- Scanlines control removed - not used with direct VRAM processing
 -----------------------------------------------------------------------------------------
 -- Video Output
 
-  p_overlay : process(Rst_n_s, Clock_10)
-	variable HStart : boolean;
-  begin
-	if Rst_n_s = '0' then
-	  HCnt <= (others => '0');
-	  VCnt <= (others => '0');
-	  HSync_t1 <= '0';
-	  Overlay_G1_VCnt <= false;
-	  Overlay_G1 <= false;
-	  Overlay_G2 <= false;
-	  Overlay_R1 <= false;
-	elsif Clock_10'event and Clock_10 = '1' then
-	  HSync_t1 <= HSync;
-	  HStart := (HSync_t1 = '0') and (HSync = '1');-- rising
-
-	  if HStart then
-		HCnt <= (others => '0');
-	  else
-		HCnt <= HCnt + "1";
-	  end if;
-
-	  if (VSync = '0') then
-		VCnt <= (others => '0');
-	  elsif HStart then
-		VCnt <= VCnt + "1";
-	  end if;
-
-	  if HStart then
-		if (Vcnt = x"1F") then
-		  Overlay_G1_VCnt <= true;
-		elsif (Vcnt = x"95") then
-		  Overlay_G1_VCnt <= false;
-		end if;
-	  end if;
-
-	  if (HCnt = x"027") and Overlay_G1_VCnt then
-		Overlay_G1 <= true;
-	  elsif (HCnt = x"046") then
-		Overlay_G1 <= false;
-	  end if;
-
-	  if (HCnt = x"046") then
-		Overlay_G2 <= true;
-	  elsif (HCnt = x"0B6") then
-		Overlay_G2 <= false;
-	  end if;
-
-	  if (HCnt = x"1A6") then
-		Overlay_R1 <= true;
-	  elsif (HCnt = x"1E6") then
-		Overlay_R1 <= false;
-	  end if;
-
-	end if;
-  end process;
+  -- Overlay process removed - color processing now handled in si_vram_to_tmds_portrait480
 --------------------------------------------------------------------------------
-  p_video_out_comb : process(Video, Overlay_G1, Overlay_G2, Overlay_R1)
+  -- Video output process removed - color processing now handled in si_vram_to_tmds_portrait480
+---------------------------------------------------------------------------------
+  -- DBLSCAN component removed - using direct VRAM-to-TMDS video generation instead
+  -- This provides better performance and eliminates the missing component warning
+---------------------------------------------------------------------------------
+  -- HDMI timing provided by si_vram_to_tmds_portrait480 (proper 640x480@60Hz VIC-1)
+
+  -- 48 kHz audio sample rate generation for HDMI IEC-60958 compliance
+  -- 25,200,000 Hz / 48,000 Hz = 525 (exact division)
+  audio_sample_proc: process(clock_pixel, I_RESET)
   begin
-	if (Video = '0') then
-	  VideoRGB  <= "000";
-	else
-	  if Overlay_G1 or Overlay_G2 then
-		VideoRGB  <= "010";
-	  elsif Overlay_R1 then
-		VideoRGB  <= "100";
-	  else
-		VideoRGB  <= "111";
-	  end if;
-	end if;
+    if I_RESET = '0' then
+      audio_sample_counter <= (others => '0');
+      audio_sample_tick <= '0';
+    elsif rising_edge(clock_pixel) then
+      if audio_sample_counter = AUDIO_SAMPLE_DIV - 1 then
+        audio_sample_counter <= (others => '0');
+        audio_sample_tick <= '1';
+      else
+        audio_sample_counter <= audio_sample_counter + 1;
+        audio_sample_tick <= '0';
+      end if;
+    end if;
   end process;
----------------------------------------------------------------------------------
-  u_dblscan : entity work.DBLSCAN
-	port map (
-	  RGB_IN(7 downto 3) => "00000",
-	  RGB_IN(2 downto 0) => VideoRGB,
-	  HSYNC_IN           => HSync,
-	  VSYNC_IN           => VSync,
 
-	  RGB_OUT            => dblscan_rgb,   -- 24-bit RGB with color overlay
-	  HSYNC_OUT          => dblscan_hsync,
-	  VSYNC_OUT          => dblscan_vsync,
-	  DE_OUT             => dblscan_de,    -- Data enable for proper timing
-	  --  NOTE CLOCKS MUST BE PHASE LOCKED !!
-	  CLK                => Clock_10,
-	  CLK_X2             => Clock_20,
-	  scanlines          => scanlines,     -- scanlines = 1 ON
-	  color_overlay      => '1'            -- Enable authentic SI colors
-	);
----------------------------------------------------------------------------------
-  -- HDMI timing generator for proper 640x480@60Hz timing
-  u_hdmi_timing: hdmi_timing
-    port map (
-        clk_pixel => clock_pixel,
-        reset_n   => I_RESET,
-        hsync     => hdmi_hsync,
-        vsync     => hdmi_vsync,
-        de        => hdmi_de,
-        h_count   => hdmi_h_count,
-        v_count   => hdmi_v_count,
-        active    => hdmi_active
-    );
+  -- Sample and hold mono audio at 48 kHz for proper HDMI audio embedding
+  audio_mono_hold_proc: process(clock_pixel, I_RESET)
+  begin
+    if I_RESET = '0' then
+      audio_mono_reg <= (others => '0');
+    elsif rising_edge(clock_pixel) then
+      if audio_sample_tick = '1' then
+        -- Sample mono game audio at exactly 48 kHz with volume boost
+        -- Shift 8-bit audio to upper bits for maximum HDMI volume
+        audio_mono_reg <= Audio & x"00";
+      end if;
+    end if;
+  end process;
 
-  -- Test pattern generator (for debugging HDMI)
-  u_test_pattern: hdmi_test_pattern
-    port map (
-        clk_pixel   => clock_pixel,
-        reset_n     => I_RESET,
-        h_count     => hdmi_h_count,
-        v_count     => hdmi_v_count,
-        active      => hdmi_active,
-        pattern_sel => "001",  -- Vertical color bars
-        auto_cycle  => '1',    -- Auto-cycle patterns
-        r           => test_pattern_r,
-        g           => test_pattern_g,
-        b           => test_pattern_b
-    );
+  -- Removed test pattern generator
 
   -- VRAM-to-TMDS direct video generator
   u_vram_tmds: si_vram_to_tmds_portrait480
@@ -552,67 +462,64 @@ vram_video_data <= vram_data_b;
     );
 
   -- HDMI encoder instantiation
-  -- RGB data selection: test pattern, direct VRAM, or processed game video with color overlay
-  hdmi_rgb <= test_pattern_r & test_pattern_g & test_pattern_b when use_test_pattern = '1' else
-              vram_tmds_r & vram_tmds_g & vram_tmds_b when use_vram_tmds = '1' else
-              dblscan_rgb; -- Enhanced dblscan with authentic Space Invaders color overlay
+  -- Direct VRAM video generation
+  hdmi_rgb <= vram_tmds_r & vram_tmds_g & vram_tmds_b; -- Direct VRAM with built-in Space Invaders color processing
 
   u_hdmi: hdmi_encoder
     port map (
-        clk_pixel     => clock_pixel,
-        clk_tmds      => clock_tmds,
-        reset_n       => I_RESET,
-        rgb_data      => hdmi_rgb,
-        hsync         => vram_tmds_hsync when use_vram_tmds = '1' else dblscan_hsync,
-        vsync         => vram_tmds_vsync when use_vram_tmds = '1' else dblscan_vsync,
-        de            => vram_tmds_de when use_vram_tmds = '1' else dblscan_de,
-        hdmi_tx_clk_p => hdmi_tx_clk_p,
-        hdmi_tx_clk_n => hdmi_tx_clk_n,
-        hdmi_tx_p     => hdmi_tx_p,
-        hdmi_tx_n     => hdmi_tx_n
+        clk_pixel          => clock_pixel,
+        clk_tmds           => clock_tmds,
+        reset_n            => I_RESET,
+        rgb_data           => hdmi_rgb,
+        hsync              => vram_tmds_hsync,
+        vsync              => vram_tmds_vsync,
+        de                 => vram_tmds_de,
+        audio_sample_left  => audio_mono_reg,   -- Mono audio to left channel
+        audio_sample_right => audio_mono_reg,   -- Mono audio to right channel
+        hdmi_tx_clk_p      => hdmi_tx_clk_p,
+        hdmi_tx_clk_n      => hdmi_tx_clk_n,
+        hdmi_tx_p          => hdmi_tx_p,
+        hdmi_tx_n          => hdmi_tx_n
     );
 ---------------------------------------------------------------------------------
   u_audio : entity work.invaders_audio
 	port map (
-	  Clk => Clock_10,
+	  Clk => clock_10,
 	  P3  => SoundCtrl3,
 	  P5  => SoundCtrl5,
 	  Aud => Audio
 	  );
-----------------------------------------------------------------------------------
-  -- 2nd order Sigma-Delta DAC for better audio quality
-  u_sigma_delta_dac : entity work.sigma_delta_dac
-	generic map(
-	  WIDTH => 8
-	)
-	port  map(
-	  clk     => Clock_20,  -- Use higher clock for better oversampling
-	  reset   => reset,
-	  data_in => Audio,
-	  dac_out => AudioPWM
+
+-- SFC Controller interface
+u_sfc : entity work.sfc_controller
+	port map (
+		clk         => clock_10,
+		reset       => reset,
+		sfc_latch   => SFC_LATCH,
+		sfc_clk     => SFC_CLK,
+		sfc_data    => SFC_DATA,
+		buttons     => sfc_buttons
 	);
 
-  O_AUDIO_L <= AudioPWM;
-  O_AUDIO_R <= AudioPWM;
-----------------------------------------------------------------------------------
--- debug
-
-process(reset, clock_27)
-begin
-  if reset = '1' then
-    clock_4hz <= '0';
-    counter_clk <= (others => '0');
-  else
-    if rising_edge(clock_27) then
-      if counter_clk = CLOCK_FREQ/8 then
-        counter_clk <= (others => '0');
-        clock_4hz <= not clock_4hz;
-        led(5 downto 0) <= not AD(9 downto 4);
+  -- PWM audio output for better quality than simple 1-bit
+  -- 8-bit PWM at ~78kHz for good audio reproduction
+  pwm_audio_proc: process(clock_10, reset)
+    variable pwm_counter : unsigned(7 downto 0) := (others => '0');
+  begin
+    if reset = '1' then
+      pwm_counter := (others => '0');
+      O_AUDIO <= '0';
+    elsif rising_edge(clock_10) then
+      pwm_counter := pwm_counter + 1;
+      if pwm_counter < unsigned(Audio) then
+        O_AUDIO <= '1';
       else
-        counter_clk <= counter_clk + 1;
+        O_AUDIO <= '0';
       end if;
     end if;
-  end if;
-end process;
+  end process;
+  -- LEDs turned off - no debug output
+  led <= (others => '0');
+
 ----------------------------------------------------------------------------------
 end;

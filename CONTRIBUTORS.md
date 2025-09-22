@@ -5,7 +5,7 @@ This project exists thanks to the following contributors and the broader open-so
 ## Project Maintainers
 
 - **Original Project**: pinballwizz ([TangNano9K-Invaders](https://github.com/pinballwizz/TangNano9K-Invaders)) - Initial Tang Nano 9K implementation
-- **HDMI/SNES Adaptation**: Terence Ang - HDMI output and SNES controller implementation
+- **HDMI/SFC Adaptation**: Terence Ang - HDMI output and SFC controller implementation
 - **Company**: EDR² (Eat, Drink, Repair and Repeat)
 - **AI Assistant**: Claude Code (Anthropic) - Code generation and technical guidance
 
