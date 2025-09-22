@@ -157,7 +157,7 @@ begin
 
 	extraBaseClkInc <= "00110000"; -- 48 = 480Hz
 
-	saucerVol <= "11001000" when P3(0) = '1' else (others=>'0');  -- Normal operation
+	saucerVol <= "01100100" when P3(0) = '1' else (others=>'0');
 	
 	saucerSound <= saucerVol when saucerClkCount(15)='1' else (others=>'0');
 	saucerHitSound <= saucerHitVol when saucerHitClkCount(15)='1' else (others=>'0');
@@ -172,7 +172,7 @@ begin
     Aud_mix <= ("00" & saucerSound) + ("00" & saucerHitSound) + ("00" & invaderHitSound) 
 	      + ("00" & invaderMoveSound) + ("00" & missileSound) + ("00" & explosionSound) + ("00" & extraBaseSound);
 
-	 aud <= aud_mix(7 downto 0); -- Use lower 8 bits directly for stronger signal	
+	 aud <= aud_mix(9 downto 2); -- Keep the output width the same as the original audio code
 	
 	-- Implement a Pseudo Random Noise Generator - same as schematic
 	process (noiseClk)
@@ -245,7 +245,7 @@ begin
 	process(P5(4),clk10ms)
 	begin
 	  if (P5(4) = '1') then
-			saucerHitVol <= "11001000"; --200 for MSB=1
+			saucerHitVol <= "01100100"; --100
 		elsif rising_edge(clk10ms) then
 			if saucerHitVol>3 then
 				saucerHitVol<=saucerHitVol-3;
@@ -260,7 +260,7 @@ begin
 	process(P3(3),clk10ms)
 	begin
 	  if (P3(3) = '1' and p3_3_prev = '0') then
-			invaderHitVol <= "11001000"; --200 for MSB=1
+			invaderHitVol <= "01100100"; --100
 			p3_3_prev <= '1';
 		elsif rising_edge(clk10ms) then
 			if invaderHitVol>3 then
@@ -277,7 +277,7 @@ begin
 	process(P3(2),clk10ms)
 	begin
 	  if (P3(2) = '1' and p3_2_prev = '0') then
-			explosionVol <= "11001000"; --200 for MSB=1
+			explosionVol <= "01100100"; --100
 			p3_2_prev <= '1';
 		elsif rising_edge(clk10ms) then
 			if explosionVol>1 then
@@ -295,7 +295,7 @@ begin
 	process(P3(1),clk10ms)
 	begin
 	  if (P3(1) = '1' and p3_1_prev = '0') then
-			missileVol <= "11001000"; --200 for MSB=1
+			missileVol <= "00110010"; --50 (half volume)
 			p3_1_prev <= '1';
 		elsif rising_edge(clk10ms) then
 			if missileVol>1 then
@@ -319,7 +319,7 @@ begin
 				extraBaseClk <= extraBaseClk+1;
 
 				if extraBaseClk < 10 then -- tone for first 100ms then silence
-					extraBaseVol  <= "11001000"; --200 for MSB=1
+					extraBaseVol  <= "01100100"; --100
 				else
 					extraBaseVol<= (others =>'0');
 				end if;
@@ -336,7 +336,7 @@ begin
 	end process;
 	
 	
-	invaderMoveVol <= "11001000" when P5 /= "0000" else (others=>'0'); -- Volume 200 for MSB=1
+	invaderMoveVol <= "01100100" when P5 /= "0000" else (others=>'0');
 
 	-- invaders = 68,75,80,93Hz
 	with P5(3 downto 0) select
